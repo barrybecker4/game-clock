@@ -1,0 +1,67 @@
+:root {
+  --bg: #111111;
+  --fg: #f5f5f5;
+  --muted: #9aa0a6;
+  --accent: #f4b860;
+  --accent-warm: #f9c889;
+  --active-warm: #f4a261;
+  --active-cool: #f08470;
+  --inactive: #4a4a4a;
+  --inactive-text: #cfcfcf;
+  --danger: #d13b3b;
+  --control-bg: #0c0c0c;
+  --control-fg: #ededed;
+
+  --font-display:
+    'SF Pro Rounded', 'SF Pro Display', 'Inter', system-ui, -apple-system,
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  height: 100dvh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+input,
+select {
+  font-family: inherit;
+}
+
+/* Tabular numerals for nicer time display */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}

@@ -1,6 +1,6 @@
 /**
  * Voice announcements via Web Speech API.
- * Speech is used for byo-yomi entry ("Byo-yomi") and the last-10-seconds
+ * Speech is used for byo-yomi entry (Japanese 秒読み) and the last-10-seconds
  * countdown of each byo-yomi period.
  *
  * The synthesizer is queued, but we keep utterances short so they finish
@@ -32,6 +32,24 @@ function pickVoice() {
     if (match) return match;
   }
   return candidates[0];
+}
+
+function pickJapaneseVoice() {
+  if (typeof speechSynthesis === 'undefined') return null;
+  const voices = speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const ja = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('ja'));
+  if (ja.length === 0) {
+    return voices.find((v) => /japanese|日本語|kyoko|otoya|hatanaka/i.test(v.name)) || null;
+  }
+
+  const preferredJa = ['Kyoko', 'Otoya', 'Google 日本語', 'Microsoft Ayumi'];
+  for (const name of preferredJa) {
+    const match = ja.find((v) => v.name === name);
+    if (match) return match;
+  }
+  return ja[0];
 }
 
 function ensureVoice() {
@@ -75,13 +93,25 @@ export function primeVoice() {
   }
 }
 
-export function speak(text, { rate = 1.05, pitch = 1, volume = 1 } = {}) {
+export function speak(
+  text,
+  { rate = 1.05, pitch = 1, volume = 1, lang = null } = {},
+) {
   if (!enabled) return;
   if (typeof speechSynthesis === 'undefined') return;
   try {
     const u = new SpeechSynthesisUtterance(text);
-    const voice = ensureVoice();
-    if (voice) u.voice = voice;
+    if (lang) {
+      u.lang = lang;
+      if (lang.toLowerCase().startsWith('ja')) {
+        const jaVoice = pickJapaneseVoice();
+        if (jaVoice) u.voice = jaVoice;
+      }
+    }
+    if (!u.voice) {
+      const voice = ensureVoice();
+      if (voice) u.voice = voice;
+    }
     u.rate = rate;
     u.pitch = pitch;
     u.volume = volume;

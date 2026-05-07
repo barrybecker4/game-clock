@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { speak, cancelSpeech } from '../audio/voiceAnnouncer.js';
-import { playBuzzer } from '../audio/buzzer.js';
+import { playBuzzer, playByoyomiChime } from '../audio/buzzer.js';
 import { saveGame, loadGame, clearGame } from '../utils/persistence.js';
 
 /**
@@ -27,6 +27,7 @@ import { saveGame, loadGame, clearGame } from '../utils/persistence.js';
  *   loser: 0 | 1 | null,
  *   spokenThisPeriod: number[],     // last seconds value we have spoken for
  *   announcedByoyomi: boolean[],    // whether the "byo-yomi" word was spoken for this player
+ *   suppressFirstByoyomiCountdown: boolean[], // skip next spoken digit after びょうよみ (main→byo)
  * }
  */
 
@@ -64,12 +65,17 @@ function freshState() {
     loser: null,
     spokenThisPeriod: [-1, -1],
     announcedByoyomi: [false, false],
+    suppressFirstByoyomiCountdown: [false, false],
   };
 }
 
 function createGameState() {
   const stored = loadGame();
-  const initial = stored && stored.screen === 'game' ? stored : freshState();
+  let initial =
+    stored && stored.screen === 'game' ? { ...stored } : freshState();
+  if (initial.screen === 'game' && !initial.suppressFirstByoyomiCountdown) {
+    initial.suppressFirstByoyomiCountdown = [false, false];
+  }
   // If a stored game existed, ensure it's paused on resume so the user can decide.
   if (initial.screen === 'game') {
     initial.isPaused = true;
@@ -129,6 +135,7 @@ function createGameState() {
         players[0].inByoyomi,
         players[1].inByoyomi,
       ],
+      suppressFirstByoyomiCountdown: [false, false],
     });
   }
 
@@ -155,6 +162,7 @@ function createGameState() {
         loser: null,
         spokenThisPeriod: [-1, -1],
         announcedByoyomi: [players[0].inByoyomi, players[1].inByoyomi],
+        suppressFirstByoyomiCountdown: [false, false],
       };
     });
   }
@@ -238,6 +246,9 @@ function createGameState() {
       const active = players[s.activePlayer];
       const announced = [...s.announcedByoyomi];
       const spoken = [...s.spokenThisPeriod];
+      const suppressFirstByoyomiCountdown = [
+        ...(s.suppressFirstByoyomiCountdown ?? [false, false]),
+      ];
 
       let lostOnTime = false;
 
@@ -258,9 +269,10 @@ function createGameState() {
             // Announce byo-yomi entry (only once per player).
             if (!announced[s.activePlayer]) {
               announced[s.activePlayer] = true;
-              speak('Byo yomi');
+              // Hiragana + ja-JP + Japanese voice when available (秒読み / byōyomi).
+              speak('びょうよみ', { lang: 'ja-JP', rate: 0.95 });
+              suppressFirstByoyomiCountdown[s.activePlayer] = true;
             }
-            // Reset the spoken-tracker for the new period.
             spoken[s.activePlayer] = -1;
           }
         } else {
@@ -271,7 +283,11 @@ function createGameState() {
             const seconds = Math.floor(active.periodTime / 1000);
             if (seconds !== spoken[s.activePlayer] && seconds >= 1 && seconds <= 10) {
               spoken[s.activePlayer] = seconds;
-              speak(String(seconds), { rate: 1.15 });
+              if (suppressFirstByoyomiCountdown[s.activePlayer]) {
+                suppressFirstByoyomiCountdown[s.activePlayer] = false;
+              } else {
+                speak(String(seconds), { rate: 1.15 });
+              }
             }
           }
 
@@ -281,6 +297,7 @@ function createGameState() {
             if (active.periodsLeft > 0) {
               active.periodTime = s.config.periodTime * 1000;
               spoken[s.activePlayer] = -1;
+              playByoyomiChime();
             } else {
               active.periodTime = 0;
               active.lostOnTime = true;
@@ -295,6 +312,7 @@ function createGameState() {
         players,
         announcedByoyomi: announced,
         spokenThisPeriod: spoken,
+        suppressFirstByoyomiCountdown,
       };
 
       if (lostOnTime) {

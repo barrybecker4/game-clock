@@ -65,3 +65,35 @@ export function playBuzzer({ duration = 1500 } = {}) {
   osc1.stop(now + seconds);
   osc2.stop(now + seconds);
 }
+
+/**
+ * Short pleasant chime when a byo-yomi period expires and the next period begins.
+ */
+export function playByoyomiChime() {
+  if (!enabled) return;
+  const ctx = getCtx();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+
+  const now = ctx.currentTime;
+  const freqs = [880, 1320];
+
+  freqs.forEach((freq, i) => {
+    const start = now + i * 0.11;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, start);
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.001, start);
+    g.gain.linearRampToValueAtTime(0.18, start + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, start + 0.38);
+
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.4);
+  });
+}

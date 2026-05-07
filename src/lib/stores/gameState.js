@@ -266,9 +266,9 @@ function createGameState() {
         } else {
           active.periodTime -= deltaMs;
 
-          // Audible countdown for the last 10 seconds.
+          // Audible countdown for the last 10 seconds (match MM:SS display: floor).
           if (active.periodTime > 0 && active.periodTime <= 10000) {
-            const seconds = Math.ceil(active.periodTime / 1000);
+            const seconds = Math.floor(active.periodTime / 1000);
             if (seconds !== spoken[s.activePlayer] && seconds >= 1 && seconds <= 10) {
               spoken[s.activePlayer] = seconds;
               speak(String(seconds), { rate: 1.15 });

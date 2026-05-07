@@ -15,6 +15,7 @@
     ? '0:00'
     : formatTime(timeForDisplay, { showTenthsUnder: 0 });
   $: subLabel = computeSubLabel(player, mode, lostOnTime);
+  $: suddenDeath = subLabel === 'Sudden Death';
 
   function computeTimeForDisplay(p, m) {
     if (m === 'fischer') return Math.max(0, p.mainTime);
@@ -26,7 +27,8 @@
     if (lost) return 'Lost on Time!';
     if (m === 'byoyomi') {
       if (p.inByoyomi) {
-        return `Byo-yomi · ${p.periodsLeft} ${p.periodsLeft === 1 ? 'period' : 'periods'} left`;
+        if (p.periodsLeft === 1) return 'Sudden Death';
+        return `Byo-yomi · ${p.periodsLeft} periods left`;
       }
       return `${p.periodsLeft} × byo-yomi ready`;
     }
@@ -57,13 +59,17 @@
     <div class="time tabular" class:lost-time={lostOnTime}>
       {timeLabel}
     </div>
-    <div class="sub">
+    <div class="sub" class:sudden-death-row={suddenDeath}>
       {#if lostOnTime}
         <span class="lost-label">Lost on Time!</span>
       {:else if !started && isActive}
         <span class="hint">Tap to start your turn</span>
       {:else if subLabel}
-        <span>{subLabel}</span>
+        {#if suddenDeath}
+          <span class="sudden-death">Sudden Death</span>
+        {:else}
+          <span>{subLabel}</span>
+        {/if}
       {/if}
     </div>
   </div>
@@ -149,6 +155,9 @@
     min-height: 1.2em;
     opacity: 0.85;
   }
+  .sub.sudden-death-row {
+    opacity: 1;
+  }
   .lost-label {
     font-size: 1.4rem;
     font-weight: 800;
@@ -158,5 +167,32 @@
   .hint {
     font-weight: 500;
     opacity: 0.7;
+  }
+
+  .sudden-death {
+    display: inline-block;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--danger);
+    animation: sudden-death-glow 1.5s ease-out forwards;
+  }
+
+  @keyframes sudden-death-glow {
+    0% {
+      text-shadow:
+        0 0 8px rgba(255, 120, 120, 1),
+        0 0 20px rgba(209, 59, 59, 0.85),
+        0 0 36px rgba(209, 59, 59, 0.5);
+    }
+    55% {
+      text-shadow:
+        0 0 4px rgba(209, 59, 59, 0.55),
+        0 0 12px rgba(209, 59, 59, 0.35);
+    }
+    100% {
+      text-shadow: none;
+    }
   }
 </style>

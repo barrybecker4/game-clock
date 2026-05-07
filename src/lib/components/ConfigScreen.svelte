@@ -1,5 +1,11 @@
 <script>
-  import { settings, FISCHER_PRESETS, BYOYOMI_PRESETS } from '../stores/settings.js';
+  import {
+    settings,
+    FISCHER_PRESETS,
+    BYOYOMI_PRESETS,
+    findFischerPresetId,
+    findByoyomiPresetId,
+  } from '../stores/settings.js';
   import { gameState } from '../stores/gameState.js';
   import { primeVoice } from '../audio/voiceAnnouncer.js';
   import { primeBuzzer } from '../audio/buzzer.js';
@@ -53,24 +59,13 @@
     gameState.startGame($settings);
   }
 
-  function presetIsActive(preset, mode) {
-    if ($settings.mode !== mode) return false;
-    if (mode === 'fischer') {
-      return (
-        $settings.fischer.mainTime === preset.mainTime &&
-        $settings.fischer.increment === preset.increment
-      );
-    }
-    return (
-      $settings.byoyomi.mainTime === preset.mainTime &&
-      $settings.byoyomi.periods === preset.periods &&
-      $settings.byoyomi.periodTime === preset.periodTime
-    );
-  }
-
   $: mode = $settings.mode;
   $: fischer = $settings.fischer;
   $: byoyomi = $settings.byoyomi;
+
+  /** Match highlight to the numeric config (avoids stale persisted "selection" IDs) */
+  $: activeFischerPresetId = findFischerPresetId(fischer);
+  $: activeByoyomiPresetId = findByoyomiPresetId(byoyomi);
 
   function formatMainSummary() {
     if (mode === 'fischer') {
@@ -117,7 +112,7 @@
         {#each FISCHER_PRESETS as preset}
           <button
             class="preset"
-            class:active={presetIsActive(preset, 'fischer')}
+            class:active={preset.id === activeFischerPresetId}
             on:click={() => applyFischerPreset(preset)}
           >
             <span class="preset-label">{preset.label}</span>
@@ -159,7 +154,7 @@
         {#each BYOYOMI_PRESETS as preset}
           <button
             class="preset"
-            class:active={presetIsActive(preset, 'byoyomi')}
+            class:active={preset.id === activeByoyomiPresetId}
             on:click={() => applyByoyomiPreset(preset)}
           >
             <span class="preset-label">{preset.label}</span>

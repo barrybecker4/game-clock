@@ -37,12 +37,25 @@
     gameState.togglePause();
   }
 
+  /** @type {'reset' | 'settings' | null} */
+  let confirmAction = null;
+
   function handleReset() {
-    gameState.reset();
+    confirmAction = 'reset';
   }
 
   function handleSettings() {
-    gameState.backToConfig();
+    confirmAction = 'settings';
+  }
+
+  function cancelConfirm() {
+    confirmAction = null;
+  }
+
+  function commitConfirm() {
+    if (confirmAction === 'reset') gameState.reset();
+    else if (confirmAction === 'settings') gameState.backToConfig();
+    confirmAction = null;
   }
 
   function handleToggleAudio() {
@@ -103,6 +116,43 @@
       on:settings={handleSettings}
     />
   {/if}
+
+  {#if confirmAction}
+    {@const title =
+      confirmAction === 'reset' ? 'Reset this game?' : 'Change settings?'}
+    {@const detail =
+      confirmAction === 'reset'
+        ? 'Timers and move counts will restart with the same configuration.'
+        : 'You will leave the current game and return to the setup screen.'}
+    {@const confirmLabel =
+      confirmAction === 'reset' ? 'Reset game' : 'Go to settings'}
+    <div
+      class="confirm-overlay"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      aria-describedby="confirm-detail"
+    >
+      <div class="confirm-card" on:click|stopPropagation role="presentation">
+        <h2 id="confirm-title" class="confirm-title">{title}</h2>
+        <p id="confirm-detail" class="confirm-detail">{detail}</p>
+        <div class="confirm-actions">
+          <button type="button" class="confirm-cancel" on:click={cancelConfirm}>
+            Cancel
+          </button>
+          <button type="button" class="confirm-ok" on:click={commitConfirm}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="confirm-backdrop"
+        aria-label="Dismiss"
+        on:click={cancelConfirm}
+      />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -114,5 +164,85 @@
     width: 100%;
     overflow: hidden;
     position: relative;
+  }
+
+  .confirm-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    pointer-events: none;
+  }
+
+  .confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .confirm-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    background: #1c1c1c;
+    border-radius: 18px;
+    padding: 1.5rem 1.25rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+  }
+
+  .confirm-title {
+    margin: 0 0 0.75rem;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--fg);
+  }
+
+  .confirm-detail {
+    margin: 0 0 1.25rem;
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .confirm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .confirm-actions button {
+    padding: 0.95rem 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .confirm-cancel {
+    background: #2a2a2a;
+    color: var(--fg);
+  }
+
+  .confirm-ok {
+    background: var(--accent);
+    color: #1a1a1a;
+  }
+
+  .confirm-actions button:active {
+    transform: scale(0.99);
   }
 </style>

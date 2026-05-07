@@ -11,12 +11,9 @@
   export let rotated = false;
 
   $: timeForDisplay = computeTimeForDisplay(player, mode);
-  $: showTenths = mode === 'byoyomi' && player.inByoyomi;
   $: timeLabel = lostOnTime
     ? '0:00'
-    : formatTime(timeForDisplay, {
-        showTenthsUnder: showTenths ? 10000 : 0,
-      });
+    : formatTime(timeForDisplay, { showTenthsUnder: 0 });
   $: subLabel = computeSubLabel(player, mode, lostOnTime);
 
   function computeTimeForDisplay(p, m) {

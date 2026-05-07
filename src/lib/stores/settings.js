@@ -40,6 +40,23 @@ export const BYOYOMI_PRESETS = [
   },
 ];
 
+export function findFischerPresetId(values) {
+  const match = FISCHER_PRESETS.find(
+    (p) => p.mainTime === values.mainTime && p.increment === values.increment,
+  );
+  return match ? match.id : null;
+}
+
+export function findByoyomiPresetId(values) {
+  const match = BYOYOMI_PRESETS.find(
+    (p) =>
+      p.mainTime === values.mainTime &&
+      p.periods === values.periods &&
+      p.periodTime === values.periodTime,
+  );
+  return match ? match.id : null;
+}
+
 const DEFAULT_SETTINGS = {
   mode: 'fischer',
   fischer: { mainTime: 300, increment: 10 },
@@ -47,23 +64,35 @@ const DEFAULT_SETTINGS = {
   audioEnabled: true,
 };
 
+/** Drop legacy persisted keys so highlight state cannot desync from time values */
+function sanitizePersisted(settingsValue) {
+  const next = { ...settingsValue };
+  delete next.selectedFischerPresetId;
+  delete next.selectedByoyomiPresetId;
+  return next;
+}
+
 function createSettings() {
   const stored = loadSettings();
-  const initial = stored ? { ...DEFAULT_SETTINGS, ...stored } : DEFAULT_SETTINGS;
+  let initial =
+    stored == null ? { ...DEFAULT_SETTINGS } : { ...DEFAULT_SETTINGS, ...stored };
+
   initial.fischer = { ...DEFAULT_SETTINGS.fischer, ...(initial.fischer || {}) };
   initial.byoyomi = { ...DEFAULT_SETTINGS.byoyomi, ...(initial.byoyomi || {}) };
+  initial = sanitizePersisted(initial);
 
   const { subscribe, set, update } = writable(initial);
 
   return {
     subscribe,
     set(value) {
-      saveSettings(value);
-      set(value);
+      const next = sanitizePersisted(value);
+      saveSettings(next);
+      set(next);
     },
     update(fn) {
       update((current) => {
-        const next = fn(current);
+        const next = sanitizePersisted(fn(current));
         saveSettings(next);
         return next;
       });
@@ -72,10 +101,16 @@ function createSettings() {
       this.update((s) => ({ ...s, mode }));
     },
     setFischer(values) {
-      this.update((s) => ({ ...s, fischer: { ...s.fischer, ...values } }));
+      this.update((s) => ({
+        ...s,
+        fischer: { ...s.fischer, ...values },
+      }));
     },
     setByoyomi(values) {
-      this.update((s) => ({ ...s, byoyomi: { ...s.byoyomi, ...values } }));
+      this.update((s) => ({
+        ...s,
+        byoyomi: { ...s.byoyomi, ...values },
+      }));
     },
     setAudioEnabled(enabled) {
       this.update((s) => ({ ...s, audioEnabled: enabled }));

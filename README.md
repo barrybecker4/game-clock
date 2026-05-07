@@ -4,9 +4,35 @@ A simple, mobile-first game clock for Go and chess. Supports **Fischer**
 time and **Japanese Byo-yomi** time controls, with audible byo-yomi
 announcements and a buzzer when a player loses on time.
 
-The app is a static, single-page Svelte build with no server. Place your
+The app is a static, single-page Svelte build with no backend server. Place your
 phone on the table beside the board, set the time control, and start
 playing.
+
+## Run and build
+
+### Run locally (development)
+
+```bash
+# 1) Install dependencies
+npm install
+
+# 2) Start the dev server
+npm run dev
+```
+
+Then open the URL printed in your terminal (typically `http://localhost:5180/`).
+
+### Build for production
+
+```bash
+# Create an optimized static build
+npm run build
+
+# Optional: preview the production build locally
+npm run preview
+```
+
+Production files are emitted to `dist/` and can be hosted on any static hosting service.
 
 ## Features
 

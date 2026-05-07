@@ -1,6 +1,6 @@
 /**
- * Generates a harsh buzzer using the Web Audio API.
- * Used for the "Lost on Time!" alert.
+ * Game sound effects via the Web Audio API (shared AudioContext).
+ * Buzzer for "Lost on Time!", byo-yomi period chime, etc.
  */
 
 let audioCtx = null;

@@ -4,7 +4,7 @@
   import { gameState } from './lib/stores/gameState.js';
   import { settings } from './lib/stores/settings.js';
   import { setVoiceEnabled } from './lib/audio/voiceAnnouncer.js';
-  import { setBuzzerEnabled } from './lib/audio/buzzer.js';
+  import { setBuzzerEnabled } from './lib/audio/sounds.js';
 
   $: setVoiceEnabled($settings.audioEnabled);
   $: setBuzzerEnabled($settings.audioEnabled);

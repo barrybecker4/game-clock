@@ -103,7 +103,7 @@ src/
 │  │  └─ persistence.js       - localStorage read/write
 │  └─ audio/
 │     ├─ voiceAnnouncer.js    - Web Speech API
-│     └─ buzzer.js            - Web Audio API buzzer tone
+│     └─ sounds.js            - Web Audio API (buzzer, chimes, etc.)
 └─ styles/
    └─ global.css
 ```

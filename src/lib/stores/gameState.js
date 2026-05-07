@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { speak, cancelSpeech } from '../audio/voiceAnnouncer.js';
-import { playBuzzer, playByoyomiChime } from '../audio/buzzer.js';
+import { playBuzzer, playByoyomiChime } from '../audio/sounds.js';
 import { saveGame, loadGame, clearGame } from '../utils/persistence.js';
 
 /**

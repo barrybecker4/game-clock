@@ -8,7 +8,7 @@
   } from '../stores/settings.js';
   import { gameState } from '../stores/gameState.js';
   import { primeVoice } from '../audio/voiceAnnouncer.js';
-  import { primeBuzzer } from '../audio/buzzer.js';
+  import { primeBuzzer } from '../audio/sounds.js';
 
   function setMode(mode) {
     settings.setMode(mode);

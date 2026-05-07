@@ -8,7 +8,7 @@
   import { createTicker } from '../utils/timer.js';
   import { requestWakeLock, releaseWakeLock } from '../utils/wakeLock.js';
   import { setVoiceEnabled, primeVoice } from '../audio/voiceAnnouncer.js';
-  import { setBuzzerEnabled, primeBuzzer } from '../audio/buzzer.js';
+  import { setBuzzerEnabled, primeBuzzer } from '../audio/sounds.js';
 
   let ticker;
 

@@ -2,7 +2,6 @@ import { writable } from 'svelte/store';
 import { loadSettings, saveSettings } from '../utils/persistence.js';
 
 export const FISCHER_PRESETS = [
-  { id: 'bullet', label: 'Bullet', mainTime: 60, increment: 2 },
   { id: 'blitz', label: 'Blitz', mainTime: 180, increment: 5 },
   { id: 'rapid', label: 'Rapid', mainTime: 300, increment: 10 },
   { id: 'classical', label: 'Classical', mainTime: 900, increment: 30 },

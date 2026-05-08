@@ -84,8 +84,7 @@
 
 <div class="config">
   <header>
-    <h1>Game Clock</h1>
-    <p class="subtitle">Configure your game</p>
+    <h1>Configure Game Clock</h1>
   </header>
 
   <div class="mode-tabs">
@@ -167,7 +166,7 @@
 
       <h2>Custom</h2>
       <div class="custom-grid byo">
-        <label>
+        <label class="main-time">
           <span>Main time (sec)</span>
           <input
             type="number"
@@ -178,7 +177,7 @@
           />
           <small>{secondsLabel(byoyomi.mainTime)}</small>
         </label>
-        <label>
+        <label class="periods">
           <span>Periods</span>
           <input
             type="number"
@@ -189,7 +188,7 @@
           />
           <small>count</small>
         </label>
-        <label>
+        <label class="period-time">
           <span>Period time (sec)</span>
           <input
             type="number"
@@ -229,11 +228,6 @@
     margin: 0;
     font-size: 1.6rem;
     letter-spacing: -0.01em;
-  }
-  header .subtitle {
-    margin: 0.25rem 0 0;
-    color: var(--muted);
-    font-size: 0.95rem;
   }
 
   .mode-tabs {
@@ -312,7 +306,10 @@
     gap: 0.75rem;
   }
   .custom-grid.byo {
-    grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .custom-grid.byo .period-time {
+    grid-column: 1 / -1;
   }
   label {
     display: flex;
@@ -345,10 +342,19 @@
 
   footer {
     margin-top: auto;
+    position: sticky;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding-top: 0.5rem;
+    padding: 0.75rem 0.25rem 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(17, 17, 17, 0),
+      rgba(17, 17, 17, 0.9) 35%,
+      rgba(17, 17, 17, 1) 100%
+    );
+    backdrop-filter: blur(2px);
   }
   .summary {
     display: flex;
@@ -383,9 +389,19 @@
   .start:active { transform: scale(0.99); }
 
   @media (max-width: 520px) {
-    .custom-grid,
-    .custom-grid.byo {
+    .custom-grid {
       grid-template-columns: 1fr;
+    }
+    .custom-grid.byo {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+    .custom-grid.byo label {
+      min-width: 0;
+    }
+    .custom-grid.byo input[type='number'] {
+      padding: 0.55rem 0.55rem;
+      font-size: 0.95rem;
     }
   }
 </style>

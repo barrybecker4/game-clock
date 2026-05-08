@@ -12,6 +12,7 @@
   let showInstallBanner = false;
   let hasInstallPrompt = false;
   let deferredInstallPrompt = null;
+  let isIosManualInstall = false;
 
   function isStandaloneMode() {
     if (typeof window === 'undefined') return true;
@@ -19,6 +20,17 @@
     const displayModeStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const displayModeFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
     return iOSStandalone || displayModeStandalone || displayModeFullscreen;
+  }
+
+  function isIosSafariLike() {
+    if (typeof window === 'undefined') return false;
+    const ua = window.navigator.userAgent || '';
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isWebKit = /webkit/i.test(ua);
+    const isCriOS = /crios/i.test(ua);
+    const isFxiOS = /fxios/i.test(ua);
+    const isEdgiOS = /edgios/i.test(ua);
+    return isIOS && isWebKit && !isCriOS && !isFxiOS && !isEdgiOS;
   }
 
   function dismissInstallBanner() {
@@ -50,6 +62,7 @@
       dismissed = false;
     }
     showInstallBanner = !isStandaloneMode() && !dismissed;
+    isIosManualInstall = isIosSafariLike() && !isStandaloneMode();
 
     const onBeforeInstallPrompt = (event) => {
       event.preventDefault();
@@ -77,7 +90,13 @@
 <main>
   {#if showInstallBanner}
     <aside class="install-banner" role="status" aria-live="polite">
-      <p>Install for full screen</p>
+      <p>
+        {#if isIosManualInstall}
+          Install for full screen: tap Share, then Add to Home Screen
+        {:else}
+          Install for full screen
+        {/if}
+      </p>
       <div class="install-banner-actions">
         {#if hasInstallPrompt}
           <button class="banner-btn install-btn" on:click={installApp}>Install</button>

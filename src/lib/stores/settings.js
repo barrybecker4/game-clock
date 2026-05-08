@@ -10,8 +10,8 @@ export const FISCHER_PRESETS = [
 
 export const BYOYOMI_PRESETS = [
   {
-    id: 'quick',
-    label: 'Quick',
+    id: 'blitz',
+    label: 'Blitz',
     mainTime: 300,
     periods: 3,
     periodTime: 10,
@@ -26,7 +26,7 @@ export const BYOYOMI_PRESETS = [
   {
     id: 'tournament',
     label: 'Tournament',
-    mainTime: 1200,
+    mainTime: 1800,
     periods: 5,
     periodTime: 30,
   },
@@ -59,7 +59,7 @@ export function findByoyomiPresetId(values) {
 const DEFAULT_SETTINGS = {
   mode: 'fischer',
   fischer: { mainTime: 300, increment: 10 },
-  byoyomi: { mainTime: 600, periods: 5, periodTime: 30 },
+  byoyomi: { mainTime: 300, periods: 3, periodTime: 10 },
   audioEnabled: true,
 };
 

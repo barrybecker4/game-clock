@@ -286,7 +286,11 @@ function createGameState() {
               if (suppressFirstByoyomiCountdown[s.activePlayer]) {
                 suppressFirstByoyomiCountdown[s.activePlayer] = false;
               } else {
-                speak(String(seconds), { rate: 1.15 });
+                speak(String(seconds), {
+                  rate: 1.08,
+                  pitch: 1.28,
+                  voiceStyle: 'pleasantWoman',
+                });
               }
             }
           }

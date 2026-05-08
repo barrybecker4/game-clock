@@ -10,6 +10,7 @@
 let enabled = true;
 let primed = false;
 let preferredVoice = null;
+let preferredPleasantWomanVoice = null;
 
 function pickVoice() {
   if (typeof speechSynthesis === 'undefined') return null;
@@ -32,6 +33,39 @@ function pickVoice() {
     if (match) return match;
   }
   return candidates[0];
+}
+
+function pickPleasantWomanVoice() {
+  if (typeof speechSynthesis === 'undefined') return null;
+  const voices = speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const englishVoices = voices.filter((v) => v.lang && v.lang.startsWith('en'));
+  const candidates = englishVoices.length > 0 ? englishVoices : voices;
+
+  // Prefer common feminine/pleasant system voices first.
+  const preferredNames = [
+    'Victoria',
+    'Ava',
+    'Samantha',
+    'Karen',
+    'Moira',
+    'Allison',
+    'Google US English Female',
+    'Microsoft Aria Online (Natural) - English (United States)',
+    'Microsoft Zira Desktop - English (United States)',
+  ];
+
+  for (const name of preferredNames) {
+    const match = candidates.find((v) => v.name === name);
+    if (match) return match;
+  }
+
+  // Fallback heuristic when exact names are unavailable.
+  const feminineHint = candidates.find((v) =>
+    /(female|woman|zira|aria|samantha|karen|victoria|moira|ava|allison)/i.test(v.name),
+  );
+  return feminineHint || null;
 }
 
 function pickJapaneseVoice() {
@@ -67,6 +101,21 @@ function ensureVoice() {
   return preferredVoice;
 }
 
+function ensurePleasantWomanVoice() {
+  if (preferredPleasantWomanVoice) return preferredPleasantWomanVoice;
+  preferredPleasantWomanVoice = pickPleasantWomanVoice();
+  if (!preferredPleasantWomanVoice && typeof speechSynthesis !== 'undefined') {
+    speechSynthesis.addEventListener(
+      'voiceschanged',
+      () => {
+        preferredPleasantWomanVoice = pickPleasantWomanVoice();
+      },
+      { once: true },
+    );
+  }
+  return preferredPleasantWomanVoice;
+}
+
 export function setVoiceEnabled(value) {
   enabled = !!value;
   if (!enabled && typeof speechSynthesis !== 'undefined') {
@@ -95,7 +144,7 @@ export function primeVoice() {
 
 export function speak(
   text,
-  { rate = 1.05, pitch = 1, volume = 1, lang = null } = {},
+  { rate = 1.05, pitch = 1, volume = 1, lang = null, voiceStyle = null } = {},
 ) {
   if (!enabled) return;
   if (typeof speechSynthesis === 'undefined') return;
@@ -109,7 +158,10 @@ export function speak(
       }
     }
     if (!u.voice) {
-      const voice = ensureVoice();
+      const voice =
+        voiceStyle === 'pleasantWoman'
+          ? ensurePleasantWomanVoice() || ensureVoice()
+          : ensureVoice();
       if (voice) u.voice = voice;
     }
     u.rate = rate;

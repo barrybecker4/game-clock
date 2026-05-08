@@ -277,7 +277,7 @@
 
   .preset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
     gap: 0.5rem;
   }
 
@@ -312,7 +312,7 @@
     gap: 0.75rem;
   }
   .custom-grid.byo {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   }
   label {
     display: flex;
@@ -354,6 +354,7 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+    gap: 0.5rem;
     padding: 0.5rem 0.25rem;
   }
   .summary-label {
@@ -366,6 +367,9 @@
   .summary-value {
     font-size: 1.25rem;
     font-weight: 700;
+    min-width: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
   }
   .start {
     padding: 1.1rem;
@@ -377,4 +381,11 @@
     letter-spacing: 0.02em;
   }
   .start:active { transform: scale(0.99); }
+
+  @media (max-width: 520px) {
+    .custom-grid,
+    .custom-grid.byo {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

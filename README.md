@@ -81,6 +81,28 @@ To preview the production build locally:
 npm run preview
 ```
 
+## Install on phone (full-screen app)
+
+After deploying to a URL over `https://`, install the app from your phone's browser.
+
+### Android (Chrome/Edge)
+
+1. Open your deployed Game Clock URL.
+2. Tap the browser menu (`⋮`) and choose **Install app** or **Add to Home screen**.
+3. Confirm install.
+4. Launch from the Home Screen icon to run without browser trim.
+
+### iPhone (Safari)
+
+1. Open your deployed Game Clock URL in Safari.
+2. Tap the **Share** button.
+3. Choose **Add to Home Screen** and confirm.
+4. Launch from the Home Screen icon to run in standalone mode.
+
+Notes:
+- Full-screen/standalone behavior applies when launched from the installed/Home Screen icon, not from a normal browser tab.
+- If icon or install metadata does not update right away, close the tab and refresh once.
+
 ## Project layout
 
 ```

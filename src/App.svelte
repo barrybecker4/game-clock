@@ -22,15 +22,18 @@
     return iOSStandalone || displayModeStandalone || displayModeFullscreen;
   }
 
-  function isIosSafariLike() {
+  function isIosDevice() {
     if (typeof window === 'undefined') return false;
     const ua = window.navigator.userAgent || '';
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
-    const isWebKit = /webkit/i.test(ua);
-    const isCriOS = /crios/i.test(ua);
-    const isFxiOS = /fxios/i.test(ua);
-    const isEdgiOS = /edgios/i.test(ua);
-    return isIOS && isWebKit && !isCriOS && !isFxiOS && !isEdgiOS;
+    const platform = window.navigator.platform || '';
+    const touchPoints = window.navigator.maxTouchPoints || 0;
+
+    // iPhone/iPad/iPod classic UA
+    const iosUA = /iphone|ipad|ipod/i.test(ua);
+    // iPadOS desktop-mode Safari reports as Mac; detect by touch support.
+    const iPadDesktopMode = /mac/i.test(platform) && touchPoints > 1;
+
+    return iosUA || iPadDesktopMode;
   }
 
   function dismissInstallBanner() {
@@ -62,7 +65,7 @@
       dismissed = false;
     }
     showInstallBanner = !isStandaloneMode() && !dismissed;
-    isIosManualInstall = isIosSafariLike() && !isStandaloneMode();
+    isIosManualInstall = isIosDevice() && !isStandaloneMode();
 
     const onBeforeInstallPrompt = (event) => {
       event.preventDefault();

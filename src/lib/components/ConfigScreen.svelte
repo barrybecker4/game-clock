@@ -22,19 +22,41 @@
     settings.applyByoyomiPreset(p);
   }
 
-  function handleFischerMain(e) {
-    const seconds = clampInt(e.target.value, 0, 60 * 60 * 6);
-    settings.setFischer({ mainTime: seconds });
+  /** Max main time (seconds) for custom controls — matches former single-field cap */
+  const MAIN_TIME_MAX_SEC = 60 * 60 * 6;
+  const MAIN_TIME_MAX_MIN = Math.floor(MAIN_TIME_MAX_SEC / 60);
+
+  function mainTimeTotalFromParts(minutes, seconds) {
+    return clampInt(minutes * 60 + seconds, 0, MAIN_TIME_MAX_SEC);
+  }
+
+  function handleFischerMainMin(e) {
+    const min = clampInt(e.target.value, 0, MAIN_TIME_MAX_MIN);
+    const sec = fischer.mainTime % 60;
+    settings.setFischer({ mainTime: mainTimeTotalFromParts(min, sec) });
+  }
+
+  function handleFischerMainSec(e) {
+    const sec = clampInt(e.target.value, 0, 59);
+    const min = Math.floor(fischer.mainTime / 60);
+    settings.setFischer({ mainTime: mainTimeTotalFromParts(min, sec) });
+  }
+
+  function handleByoMainMin(e) {
+    const min = clampInt(e.target.value, 0, MAIN_TIME_MAX_MIN);
+    const sec = byoyomi.mainTime % 60;
+    settings.setByoyomi({ mainTime: mainTimeTotalFromParts(min, sec) });
+  }
+
+  function handleByoMainSec(e) {
+    const sec = clampInt(e.target.value, 0, 59);
+    const min = Math.floor(byoyomi.mainTime / 60);
+    settings.setByoyomi({ mainTime: mainTimeTotalFromParts(min, sec) });
   }
 
   function handleFischerInc(e) {
     const seconds = clampInt(e.target.value, 0, 600);
     settings.setFischer({ increment: seconds });
-  }
-
-  function handleByoMain(e) {
-    const seconds = clampInt(e.target.value, 0, 60 * 60 * 6);
-    settings.setByoyomi({ mainTime: seconds });
   }
 
   function handleByoPeriods(e) {
@@ -124,18 +146,34 @@
 
       <h2>Custom</h2>
       <div class="custom-grid">
-        <label>
-          <span>Main time (sec)</span>
-          <input
-            type="number"
-            min="0"
-            step="30"
-            value={fischer.mainTime}
-            on:input={handleFischerMain}
-          />
+        <div class="main-time-split">
+          <div class="main-time-inputs">
+            <label>
+              <span>Main time (minutes)</span>
+              <input
+                type="number"
+                min="0"
+                max={MAIN_TIME_MAX_MIN}
+                step="1"
+                value={Math.floor(fischer.mainTime / 60)}
+                on:input={handleFischerMainMin}
+              />
+            </label>
+            <label>
+              <span>Main time (seconds)</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value={fischer.mainTime % 60}
+                on:input={handleFischerMainSec}
+              />
+            </label>
+          </div>
           <small>{secondsLabel(fischer.mainTime)}</small>
-        </label>
-        <label>
+        </div>
+        <label class="increment-span">
           <span>Increment (sec)</span>
           <input
             type="number"
@@ -166,17 +204,33 @@
 
       <h2>Custom</h2>
       <div class="custom-grid byo">
-        <label class="main-time">
-          <span>Main time (sec)</span>
-          <input
-            type="number"
-            min="0"
-            step="30"
-            value={byoyomi.mainTime}
-            on:input={handleByoMain}
-          />
+        <div class="main-time-split byo-main">
+          <div class="main-time-inputs">
+            <label>
+              <span>Main time (minutes)</span>
+              <input
+                type="number"
+                min="0"
+                max={MAIN_TIME_MAX_MIN}
+                step="1"
+                value={Math.floor(byoyomi.mainTime / 60)}
+                on:input={handleByoMainMin}
+              />
+            </label>
+            <label>
+              <span>Main time (seconds)</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value={byoyomi.mainTime % 60}
+                on:input={handleByoMainSec}
+              />
+            </label>
+          </div>
           <small>{secondsLabel(byoyomi.mainTime)}</small>
-        </label>
+        </div>
         <label class="periods">
           <span>Periods</span>
           <input
@@ -305,11 +359,34 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
   }
+  .custom-grid:not(.byo) .main-time-split,
+  .custom-grid:not(.byo) .increment-span {
+    grid-column: 1 / -1;
+  }
   .custom-grid.byo {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .custom-grid.byo .byo-main {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
   .custom-grid.byo .period-time {
     grid-column: 1 / -1;
+  }
+  .main-time-split {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .main-time-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .main-time-inputs label {
+    min-width: 0;
   }
   label {
     display: flex;

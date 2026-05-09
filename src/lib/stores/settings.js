@@ -33,7 +33,7 @@ export const BYOYOMI_PRESETS = [
   {
     id: 'long',
     label: 'Long',
-    mainTime: 1800,
+    mainTime: 2400,
     periods: 5,
     periodTime: 60,
   },

@@ -1,7 +1,7 @@
 /**
  * Voice announcements via Web Speech API.
- * Speech is used for byo-yomi entry (Japanese 秒読み) and the last-10-seconds
- * countdown of each byo-yomi period.
+ * Speech is used for byo-yomi entry (Japanese 秒読み) and the audible countdown
+ * at the end of each byo-yomi period (last 10s, or last 5s when the period is under 15s).
  *
  * The synthesizer is queued, but we keep utterances short so they finish
  * before the next second arrives.

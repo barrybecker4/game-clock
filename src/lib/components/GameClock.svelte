@@ -29,7 +29,18 @@
   function pulseTurnSuccess() {
     try {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(12);
+        navigator.vibrate(20);
+      }
+    } catch {
+      /* ignore unsupported environments */
+    }
+  }
+
+  /** Short double pulse when the inactive side is tapped (wrong player). */
+  function pulseWrongTap() {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([12, 40, 12]);
       }
     } catch {
       /* ignore unsupported environments */
@@ -57,21 +68,23 @@
 
     if (playerId !== s.activePlayer) {
       flashWrongSide(playerId);
+      pulseWrongTap();
       return;
     }
 
     primeVoice();
     primeBuzzer();
-    const activeBefore = s.activePlayer;
     gameState.endTurn(playerId);
-    const activeAfter = get(gameState).activePlayer;
-    if (activeBefore !== activeAfter) {
-      pulseTurnSuccess();
-    }
+    pulseTurnSuccess();
   }
 
   function handleTogglePause() {
+    const wasPaused = get(gameState).isPaused;
     gameState.togglePause();
+    if (wasPaused) {
+      primeVoice();
+      primeBuzzer();
+    }
   }
 
   /** @type {'reset' | 'settings' | null} */

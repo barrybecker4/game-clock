@@ -79,12 +79,9 @@
   }
 
   function handleTogglePause() {
-    const wasPaused = get(gameState).isPaused;
+    primeVoice();
+    primeBuzzer();
     gameState.togglePause();
-    if (wasPaused) {
-      primeVoice();
-      primeBuzzer();
-    }
   }
 
   /** @type {'reset' | 'settings' | null} */

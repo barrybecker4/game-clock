@@ -5,13 +5,49 @@
 
 let audioCtx = null;
 let enabled = true;
+let visibilityHookInstalled = false;
 
 function getCtx() {
   if (audioCtx) return audioCtx;
   const Ctor = window.AudioContext || window.webkitAudioContext;
   if (!Ctor) return null;
   audioCtx = new Ctor();
+  installVisibilityResumeHook();
   return audioCtx;
+}
+
+function installVisibilityResumeHook() {
+  if (visibilityHookInstalled || typeof document === 'undefined') return;
+  visibilityHookInstalled = true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !audioCtx || audioCtx.state === 'closed') {
+      return;
+    }
+    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+      void audioCtx.resume();
+    }
+  });
+}
+
+/**
+ * iOS Safari unlock: start a graph node synchronously inside the user-gesture stack.
+ * `await ctx.resume()` in an async handler often runs too late for iOS to count as activation.
+ */
+function unlockWebAudioWithSilentBuffer(ctx) {
+  try {
+    const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    src.connect(gain);
+    gain.connect(ctx.destination);
+    const t = ctx.currentTime;
+    src.start(t);
+    src.stop(t + 0.001);
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -34,16 +70,22 @@ export function setBuzzerEnabled(value) {
   enabled = !!value;
 }
 
-/** Resume the context after a user gesture (required by some browsers). */
-export async function primeBuzzer() {
+/**
+ * Resume / unlock Web Audio after a user gesture.
+ * Must stay synchronous — do not `await ctx.resume()` here (breaks iOS Safari activation).
+ */
+export function primeBuzzer() {
   const ctx = getCtx();
-  if (!ctx) return;
-  if (ctx.state === 'suspended') {
-    try {
-      await ctx.resume();
-    } catch (err) {
-      console.warn('Audio context resume failed:', err);
+  if (!ctx || ctx.state === 'closed') return;
+  try {
+    const needsKick =
+      ctx.state === 'suspended' || ctx.state === 'interrupted';
+    if (needsKick) {
+      void ctx.resume();
+      unlockWebAudioWithSilentBuffer(ctx);
     }
+  } catch (err) {
+    console.warn('Audio context prime failed:', err);
   }
 }
 

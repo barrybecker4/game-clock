@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import { get } from 'svelte/store';
   import PlayerClock from './PlayerClock.svelte';
   import ControlBar from './ControlBar.svelte';
   import PauseMenu from './PauseMenu.svelte';
@@ -11,6 +12,29 @@
   import { setBuzzerEnabled, primeBuzzer } from '../audio/sounds.js';
 
   let ticker;
+  /** Which clock (0 bottom / 1 top) shows wrong-side tap feedback */
+  let wrongFlashPlayer = /** @type {null | 0 | 1} */ (null);
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let wrongFlashClearId = null;
+
+  function flashWrongSide(playerId) {
+    wrongFlashPlayer = playerId;
+    if (wrongFlashClearId !== null) clearTimeout(wrongFlashClearId);
+    wrongFlashClearId = setTimeout(() => {
+      wrongFlashPlayer = null;
+      wrongFlashClearId = null;
+    }, 420);
+  }
+
+  function pulseTurnSuccess() {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(12);
+      }
+    } catch {
+      /* ignore unsupported environments */
+    }
+  }
 
   onMount(() => {
     ticker = createTicker((delta) => gameState.tick(delta));
@@ -22,15 +46,28 @@
 
   onDestroy(() => {
     if (ticker) ticker.stop();
+    if (wrongFlashClearId !== null) clearTimeout(wrongFlashClearId);
     releaseWakeLock();
   });
 
   function handlePlayerTap(playerId) {
-    if ($gameState.gameOver) return;
-    if ($gameState.isPaused) return;
+    const s = get(gameState);
+    if (s.gameOver) return;
+    if (s.isPaused) return;
+
+    if (playerId !== s.activePlayer) {
+      flashWrongSide(playerId);
+      return;
+    }
+
     primeVoice();
     primeBuzzer();
+    const activeBefore = s.activePlayer;
     gameState.endTurn(playerId);
+    const activeAfter = get(gameState).activePlayer;
+    if (activeBefore !== activeAfter) {
+      pulseTurnSuccess();
+    }
   }
 
   function handleTogglePause() {
@@ -82,7 +119,8 @@
     gameOver={$gameState.gameOver}
     lostOnTime={$gameState.players[1].lostOnTime}
     rotated={true}
-    on:click={() => handlePlayerTap(1)}
+    wrongFlash={wrongFlashPlayer === 1}
+    on:tap={() => handlePlayerTap(1)}
   />
 
   <ControlBar
@@ -104,7 +142,8 @@
     gameOver={$gameState.gameOver}
     lostOnTime={$gameState.players[0].lostOnTime}
     rotated={false}
-    on:click={() => handlePlayerTap(0)}
+    wrongFlash={wrongFlashPlayer === 0}
+    on:tap={() => handlePlayerTap(0)}
   />
 
   {#if showOverlay}

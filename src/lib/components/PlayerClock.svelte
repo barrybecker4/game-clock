@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from 'svelte';
   import { formatTime } from '../utils/timer.js';
 
   export let player;
@@ -9,6 +10,28 @@
   export let gameOver;
   export let lostOnTime;
   export let rotated = false;
+  /** Brief highlight when this side was tapped but it's not that player's turn */
+  export let wrongFlash = false;
+
+  const dispatch = createEventDispatcher();
+
+  /** Ignore synthetic click shortly after pointerup (same gesture). */
+  let lastPointerTapAt = 0;
+
+  function emitTap() {
+    dispatch('tap');
+  }
+
+  function handlePointerUp(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    lastPointerTapAt = Date.now();
+    emitTap();
+  }
+
+  function handleClick() {
+    if (Date.now() - lastPointerTapAt < 350) return;
+    emitTap();
+  }
 
   $: timeForDisplay = computeTimeForDisplay(player, mode);
   $: timeLabel = lostOnTime
@@ -43,12 +66,18 @@
     gameOver ? 'game-over' : '',
     lostOnTime ? 'lost' : '',
     !started ? 'pre-start' : '',
+    wrongFlash ? 'wrong-flash' : '',
   ]
     .filter(Boolean)
     .join(' ');
 </script>
 
-<button class={clockClass} on:click>
+<button
+  type="button"
+  class={clockClass}
+  on:pointerup={handlePointerUp}
+  on:click={handleClick}
+>
   <div class="inner">
     <div class="top-row">
       <span class="moves">
@@ -91,7 +120,34 @@
     border: none;
     cursor: pointer;
     -webkit-touch-callout: none;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
     text-align: center;
+  }
+
+  .clock.wrong-flash {
+    animation: wrong-flash-pulse 0.42s ease;
+  }
+
+  @keyframes wrong-flash-pulse {
+    0%,
+    100% {
+      box-shadow: inset 0 0 0 0 transparent;
+    }
+    35% {
+      box-shadow: inset 0 0 0 5px rgba(209, 59, 59, 0.65);
+    }
+    70% {
+      box-shadow: inset 0 0 0 2px rgba(209, 59, 59, 0.35);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clock.wrong-flash {
+      animation: none;
+      box-shadow: inset 0 0 0 3px rgba(209, 59, 59, 0.5);
+    }
   }
 
   .clock.rotated {

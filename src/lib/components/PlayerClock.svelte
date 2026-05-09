@@ -56,21 +56,23 @@
         {player.moveCount === 1 ? 'move' : 'moves'}
       </span>
     </div>
-    <div class="time tabular" class:lost-time={lostOnTime}>
-      {timeLabel}
-    </div>
-    <div class="sub" class:sudden-death-row={suddenDeath}>
-      {#if lostOnTime}
-        <span class="lost-label">Lost on Time!</span>
-      {:else if !started && isActive}
-        <span class="hint">Tap to start your turn</span>
-      {:else if subLabel}
-        {#if suddenDeath}
-          <span class="sudden-death">Sudden Death</span>
-        {:else}
-          <span>{subLabel}</span>
+    <div class="time-stack">
+      <div class="time tabular" class:lost-time={lostOnTime}>
+        {timeLabel}
+      </div>
+      <div class="sub" class:sudden-death-row={suddenDeath}>
+        {#if lostOnTime}
+          <span class="lost-label">Lost on Time!</span>
+        {:else if !started && isActive}
+          <span class="hint">Tap to start your turn</span>
+        {:else if subLabel}
+          {#if suddenDeath}
+            <span class="sudden-death">Sudden Death</span>
+          {:else}
+            <span>{subLabel}</span>
+          {/if}
         {/if}
-      {/if}
+      </div>
     </div>
   </div>
 </button>
@@ -92,11 +94,19 @@
     text-align: center;
   }
 
+  .clock.rotated {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .clock:not(.rotated) {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   .inner {
     flex: 1;
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    align-items: center;
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
     justify-items: center;
     padding: 1.25rem 1rem;
     width: 100%;
@@ -123,12 +133,21 @@
     color: #fff;
   }
 
+  .time-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 0;
+    width: 100%;
+  }
+
   .time {
-    font-size: clamp(5rem, 24vw, 11rem);
+    font-size: clamp(5rem, 26vw, 14rem);
     font-weight: 800;
     line-height: 1;
-    letter-spacing: -0.04em;
-    align-self: center;
+    letter-spacing: -0.02em;
   }
   .time.lost-time {
     opacity: 0.85;
@@ -143,35 +162,35 @@
   }
   .moves {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.4rem;
     opacity: 0.8;
   }
 
   .sub {
-    align-self: end;
-    padding-bottom: 0.25rem;
-    font-size: 0.95rem;
+    font-size: clamp(1.5rem, 3.4vw, 2.52rem);
     font-weight: 600;
-    min-height: 1.2em;
+    min-height: 1.5em;
+    line-height: 1.5;
     opacity: 0.85;
   }
   .sub.sudden-death-row {
     opacity: 1;
   }
   .lost-label {
-    font-size: 1.4rem;
+    font-size: 2.5rem;
     font-weight: 800;
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
   .hint {
+    font-size: clamp(1.5rem, 3.8vw, 2.15rem);
     font-weight: 500;
     opacity: 0.7;
   }
 
   .sudden-death {
     display: inline-block;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;

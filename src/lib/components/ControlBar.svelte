@@ -86,7 +86,7 @@
     justify-items: center;
     gap: 0;
     padding: 0.5rem 0.5rem;
-    min-height: 3.5rem;
+    min-height: 4rem;
     border-top: 1px solid #000;
     border-bottom: 1px solid #000;
   }

@@ -1,4 +1,5 @@
 <script>
+  import AboutDialog from './AboutDialog.svelte';
   import {
     settings,
     FISCHER_PRESETS,
@@ -88,6 +89,8 @@
   /** Match highlight to the numeric config (avoids stale persisted "selection" IDs) */
   $: activeFischerPresetId = findFischerPresetId(fischer);
   $: activeByoyomiPresetId = findByoyomiPresetId(byoyomi);
+
+  let showAbout = false;
 
   function formatMainSummary() {
     if (mode === 'fischer') {
@@ -259,11 +262,18 @@
 
   <footer>
     <div class="summary">
-      <span class="summary-label">{mode === 'fischer' ? 'Fischer' : 'Byo-yomi'}</span>
-      <span class="summary-value tabular">{formatMainSummary()}</span>
+      <div class="summary-text">
+        <span class="summary-label">{mode === 'fischer' ? 'Fischer' : 'Byo-yomi'}</span>
+        <span class="summary-value tabular">{formatMainSummary()}</span>
+      </div>
+      <button type="button" class="about-link" on:click={() => (showAbout = true)}>About</button>
     </div>
     <button class="start" on:click={startGame}>Start Game</button>
   </footer>
+
+  {#if showAbout}
+    <AboutDialog on:close={() => (showAbout = false)} />
+  {/if}
 </div>
 
 <style>
@@ -440,6 +450,14 @@
     gap: 0.5rem;
     padding: 0.5rem 0.25rem;
   }
+  .summary-text {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
   .summary-label {
     color: var(--muted);
     font-size: 0.9rem;
@@ -451,8 +469,20 @@
     font-size: 1.25rem;
     font-weight: 700;
     min-width: 0;
-    text-align: right;
     overflow-wrap: anywhere;
+  }
+  .about-link {
+    flex-shrink: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0.25rem 0.15rem;
+    margin: -0.25rem -0.15rem;
+  }
+  .about-link:active {
+    opacity: 0.85;
   }
   .start {
     padding: 1.1rem;

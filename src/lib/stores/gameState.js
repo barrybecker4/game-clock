@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { speak, cancelSpeech } from '../audio/voiceAnnouncer.js';
+import { speak, cancelSpeech, primeVoice } from '../audio/voiceAnnouncer.js';
 import { playBuzzer, playByoyomiChime } from '../audio/sounds.js';
 import { saveGame, loadGame, clearGame } from '../utils/persistence.js';
 
@@ -14,6 +14,9 @@ const BYOYOMI_LONG_AUDIBLE_THRESHOLD_SEC = 15;
 
 const BYOYOMI_SHORT_AUDIBLE_TAIL_SEC = 5;
 const BYOYOMI_LONG_AUDIBLE_TAIL_SEC = 10;
+
+/** Fischer: speak each integer second 10…1 while main time is under 11s on the clock (same window as byo-yomi tail). */
+export const FISCHER_COUNTDOWN_TAIL_SEC = 10;
 
 /**
  * MM:SS uses `floor(periodTime / MS_PER_SECOND)` for the seconds digit. That digit is N
@@ -246,6 +249,9 @@ function createGameState() {
       // any byo-yomi countdown can announce again on the new turn.
       const spoken = [...s.spokenThisPeriod];
       spoken[nextActive] = SPOKEN_NONE;
+      if (s.mode === 'fischer') {
+        spoken[playerId] = SPOKEN_NONE;
+      }
 
       return {
         ...s,
@@ -276,7 +282,38 @@ function createGameState() {
       let lostOnTime = false;
 
       if (s.mode === 'fischer') {
+        const prevMainTime = active.mainTime;
         active.mainTime -= deltaMs;
+        const newMain = active.mainTime;
+
+        if (newMain > 0) {
+          const speakOpts = {
+            rate: BYOYOMI_COUNTDOWN_SPEAK_RATE,
+            pitch: BYOYOMI_COUNTDOWN_SPEAK_PITCH,
+            voiceStyle: BYOYOMI_COUNTDOWN_VOICE_STYLE,
+          };
+          // Speak every crossed second boundary 10…1 (handles large `deltaMs` when rAF throttles).
+          let primedCountdown = false;
+          for (let k = FISCHER_COUNTDOWN_TAIL_SEC; k >= BYOYOMI_COUNTDOWN_MIN_SPOKEN_SEC; k--) {
+            if (
+              newMain < (k + 1) * MS_PER_SECOND &&
+              prevMainTime >= (k + 1) * MS_PER_SECOND
+            ) {
+              if (!primedCountdown) {
+                primeVoice();
+                primedCountdown = true;
+              }
+              speak(String(k), speakOpts);
+            }
+          }
+        }
+
+        if (newMain >= (FISCHER_COUNTDOWN_TAIL_SEC + 1) * MS_PER_SECOND) {
+          spoken[s.activePlayer] = SPOKEN_NONE;
+        } else if (newMain > 0) {
+          spoken[s.activePlayer] = Math.floor(newMain / MS_PER_SECOND);
+        }
+
         if (active.mainTime <= 0) {
           active.mainTime = 0;
           active.lostOnTime = true;

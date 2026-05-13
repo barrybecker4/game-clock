@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import { FISCHER_COUNTDOWN_TAIL_SEC } from '../stores/gameState.js';
   import { formatTime } from '../utils/timer.js';
 
   export let player;
@@ -46,6 +47,8 @@
     return Math.max(0, p.mainTime);
   }
 
+  const MS = 1000;
+
   function computeSubLabel(p, m, lost) {
     if (lost) return 'Lost on Time!';
     if (m === 'byoyomi') {
@@ -54,6 +57,13 @@
         return `Byo-yomi · ${p.periodsLeft} periods left`;
       }
       return `${p.periodsLeft} × byo-yomi ready`;
+    }
+    if (
+      m === 'fischer' &&
+      p.mainTime > 0 &&
+      p.mainTime < (FISCHER_COUNTDOWN_TAIL_SEC + 1) * MS
+    ) {
+      return 'Sudden Death';
     }
     return null;
   }

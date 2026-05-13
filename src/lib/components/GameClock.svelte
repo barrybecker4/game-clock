@@ -9,7 +9,7 @@
   import { createTicker } from '../utils/timer.js';
   import { requestWakeLock, releaseWakeLock } from '../utils/wakeLock.js';
   import { setVoiceEnabled, primeVoice } from '../audio/voiceAnnouncer.js';
-  import { setBuzzerEnabled, primeBuzzer } from '../audio/sounds.js';
+  import { setBuzzerEnabled, primeBuzzer, playTurnEndChirp } from '../audio/sounds.js';
 
   let ticker;
   /** Which clock (0 bottom / 1 top) shows wrong-side tap feedback */
@@ -74,6 +74,7 @@
 
     primeVoice();
     primeBuzzer();
+    playTurnEndChirp();
     gameState.endTurn(playerId);
     pulseTurnSuccess();
   }

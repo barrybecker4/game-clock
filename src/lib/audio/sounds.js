@@ -1,6 +1,6 @@
 /**
  * Game sound effects via the Web Audio API (shared AudioContext).
- * Buzzer for "Lost on Time!", byo-yomi period chime, etc.
+ * Buzzer for "Lost on Time!", byo-yomi period chime, turn-end tap chirp, etc.
  */
 
 let audioCtx = null;
@@ -151,5 +151,34 @@ export function playByoyomiChime() {
       osc.start(start);
       osc.stop(start + 0.4);
     });
+  });
+}
+
+/**
+ * Brief rising chirp when the active player ends their turn (tap feedback).
+ */
+export function playTurnEndChirp() {
+  if (!enabled) return;
+  const ctx = getCtx();
+  if (!ctx) return;
+
+  runWhenContextRunning(ctx, (c) => {
+    const now = c.currentTime;
+    const dur = 0.09;
+
+    const osc = c.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(560, now);
+    osc.frequency.linearRampToValueAtTime(920, now + dur);
+
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.001, now);
+    g.gain.linearRampToValueAtTime(0.14, now + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur + 0.02);
+
+    osc.connect(g);
+    g.connect(c.destination);
+    osc.start(now);
+    osc.stop(now + dur + 0.025);
   });
 }

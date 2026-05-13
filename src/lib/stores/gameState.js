@@ -232,9 +232,12 @@ function createGameState() {
       active.moveCount += 1;
 
       if (s.mode === 'fischer') {
-        // Add the increment, but only if the player hasn't already lost.
-        active.mainTime = Math.max(0, active.mainTime) +
-          s.config.increment * MS_PER_SECOND;
+        // First tap only starts the opponent's clock (no main time has ticked yet);
+        // increment applies from the second tap onward, after each completed move.
+        if (s.started) {
+          active.mainTime =
+            Math.max(0, active.mainTime) + s.config.increment * MS_PER_SECOND;
+        }
       } else if (s.mode === 'byoyomi') {
         // If the player completed a move while in byo-yomi, the period
         // resets back to the full period time (Japanese rules).

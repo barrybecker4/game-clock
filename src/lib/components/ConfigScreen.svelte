@@ -92,12 +92,10 @@
 
   let showAbout = false;
 
-  function formatMainSummary() {
-    if (mode === 'fischer') {
-      return `${secondsLabel(fischer.mainTime)} + ${fischer.increment}s`;
-    }
-    return `${secondsLabel(byoyomi.mainTime)} + ${byoyomi.periods} × ${byoyomi.periodTime}s`;
-  }
+  $: mainSummary =
+    mode === 'fischer'
+      ? `${secondsLabel(fischer.mainTime)} + ${fischer.increment}s`
+      : `${secondsLabel(byoyomi.mainTime)} + ${byoyomi.periods} × ${byoyomi.periodTime}s`;
 
   function secondsLabel(s) {
     if (s < 60) return `${s}s`;
@@ -264,7 +262,7 @@
     <div class="summary">
       <div class="summary-text">
         <span class="summary-label">{mode === 'fischer' ? 'Fischer' : 'Byo-yomi'}</span>
-        <span class="summary-value tabular">{formatMainSummary()}</span>
+        <span class="summary-value tabular">{mainSummary}</span>
       </div>
       <button type="button" class="about-link" on:click={() => (showAbout = true)}>About</button>
     </div>

@@ -1,6 +1,4 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
-  import { get } from 'svelte/store';
   import PlayerClock from './PlayerClock.svelte';
   import ControlBar from './ControlBar.svelte';
   import PauseMenu from './PauseMenu.svelte';
@@ -13,7 +11,7 @@
 
   let ticker;
   /** Which clock (0 bottom / 1 top) shows wrong-side tap feedback */
-  let wrongFlashPlayer = /** @type {null | 0 | 1} */ (null);
+  let wrongFlashPlayer = $state(/** @type {null | 0 | 1} */ (null));
   /** @type {ReturnType<typeof setTimeout> | null} */
   let wrongFlashClearId = null;
 
@@ -47,22 +45,21 @@
     }
   }
 
-  onMount(() => {
+  $effect(() => {
     ticker = createTicker((delta) => gameState.tick(delta));
     ticker.start();
     requestWakeLock();
     setVoiceEnabled($settings.audioEnabled);
     setBuzzerEnabled($settings.audioEnabled);
-  });
-
-  onDestroy(() => {
-    if (ticker) ticker.stop();
-    if (wrongFlashClearId !== null) clearTimeout(wrongFlashClearId);
-    releaseWakeLock();
+    return () => {
+      if (ticker) ticker.stop();
+      if (wrongFlashClearId !== null) clearTimeout(wrongFlashClearId);
+      releaseWakeLock();
+    };
   });
 
   function handlePlayerTap(playerId) {
-    const s = get(gameState);
+    const s = $gameState;
     if (s.gameOver) return;
     if (s.isPaused) return;
 
@@ -86,7 +83,7 @@
   }
 
   /** @type {'reset' | 'settings' | null} */
-  let confirmAction = null;
+  let confirmAction = $state(null);
 
   function handleReset() {
     confirmAction = 'reset';
@@ -113,11 +110,12 @@
     setBuzzerEnabled(next);
   }
 
-  $: showOverlay = $gameState.isPaused || $gameState.gameOver;
-  $: loserText =
+  let showOverlay = $derived($gameState.isPaused || $gameState.gameOver);
+  let loserText = $derived(
     $gameState.loser !== null
       ? `Player ${$gameState.loser === 0 ? 'Bottom' : 'Top'} ran out of time`
-      : '';
+      : ''
+  );
 </script>
 
 <div class="game">
@@ -131,17 +129,17 @@
     lostOnTime={$gameState.players[1].lostOnTime}
     rotated={true}
     wrongFlash={wrongFlashPlayer === 1}
-    on:tap={() => handlePlayerTap(1)}
+    ontap={() => handlePlayerTap(1)}
   />
 
   <ControlBar
     isPaused={$gameState.isPaused}
     audioEnabled={$settings.audioEnabled}
     gameOver={$gameState.gameOver}
-    on:togglePause={handleTogglePause}
-    on:reset={handleReset}
-    on:settings={handleSettings}
-    on:toggleAudio={handleToggleAudio}
+    ontogglePause={handleTogglePause}
+    onreset={handleReset}
+    onsettings={handleSettings}
+    ontoggleAudio={handleToggleAudio}
   />
 
   <PlayerClock
@@ -154,16 +152,16 @@
     lostOnTime={$gameState.players[0].lostOnTime}
     rotated={false}
     wrongFlash={wrongFlashPlayer === 0}
-    on:tap={() => handlePlayerTap(0)}
+    ontap={() => handlePlayerTap(0)}
   />
 
   {#if showOverlay}
     <PauseMenu
       gameOver={$gameState.gameOver}
       {loserText}
-      on:resume={handleTogglePause}
-      on:reset={handleReset}
-      on:settings={handleSettings}
+      onresume={handleTogglePause}
+      onreset={handleReset}
+      onsettings={handleSettings}
     />
   {/if}
 
@@ -183,14 +181,14 @@
       aria-labelledby="confirm-title"
       aria-describedby="confirm-detail"
     >
-      <div class="confirm-card" on:click|stopPropagation role="presentation">
+      <div class="confirm-card" onclick={(e) => e.stopPropagation()} role="presentation">
         <h2 id="confirm-title" class="confirm-title">{title}</h2>
         <p id="confirm-detail" class="confirm-detail">{detail}</p>
         <div class="confirm-actions">
-          <button type="button" class="confirm-cancel" on:click={cancelConfirm}>
+          <button type="button" class="confirm-cancel" onclick={cancelConfirm}>
             Cancel
           </button>
-          <button type="button" class="confirm-ok" on:click={commitConfirm}>
+          <button type="button" class="confirm-ok" onclick={commitConfirm}>
             {confirmLabel}
           </button>
         </div>
@@ -199,8 +197,8 @@
         type="button"
         class="confirm-backdrop"
         aria-label="Dismiss"
-        on:click={cancelConfirm}
-      />
+        onclick={cancelConfirm}
+      ></button>
     </div>
   {/if}
 </div>

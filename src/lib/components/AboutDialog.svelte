@@ -1,12 +1,10 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher();
+  let { onclose } = $props();
 
   const GITHUB_URL = 'https://github.com/barrybecker4/game-clock';
 
   function close() {
-    dispatch('close');
+    onclose?.();
   }
 </script>
 
@@ -25,9 +23,9 @@
         </dd>
       </div>
     </dl>
-    <button type="button" class="close-btn" on:click={close}>Close</button>
+    <button type="button" class="close-btn" onclick={close}>Close</button>
   </div>
-  <button type="button" class="backdrop" aria-label="Dismiss" on:click={close} />
+  <button type="button" class="backdrop" aria-label="Dismiss" onclick={close}></button>
 </div>
 
 <style>

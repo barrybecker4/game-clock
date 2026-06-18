@@ -1,26 +1,25 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
   import { FISCHER_COUNTDOWN_TAIL_SEC } from '../stores/gameState.js';
   import { formatTime } from '../utils/timer.js';
 
-  export let player;
-  export let mode;
-  export let isActive;
-  export let isPaused;
-  export let started;
-  export let gameOver;
-  export let lostOnTime;
-  export let rotated = false;
-  /** Brief highlight when this side was tapped but it's not that player's turn */
-  export let wrongFlash = false;
-
-  const dispatch = createEventDispatcher();
+  let {
+    player,
+    mode,
+    isActive,
+    isPaused,
+    started,
+    gameOver,
+    lostOnTime,
+    rotated = false,
+    wrongFlash = false,
+    ontap,
+  } = $props();
 
   /** Ignore synthetic click shortly after pointerup (same gesture). */
   let lastPointerTapAt = 0;
 
   function emitTap() {
-    dispatch('tap');
+    ontap?.();
   }
 
   function handlePointerUp(e) {
@@ -34,20 +33,13 @@
     emitTap();
   }
 
-  $: timeForDisplay = computeTimeForDisplay(player, mode);
-  $: timeLabel = lostOnTime
-    ? '0:00'
-    : formatTime(timeForDisplay, { showTenthsUnder: 0 });
-  $: subLabel = computeSubLabel(player, mode, lostOnTime);
-  $: suddenDeath = subLabel === 'Sudden Death';
+  const MS = 1000;
 
   function computeTimeForDisplay(p, m) {
     if (m === 'fischer') return Math.max(0, p.mainTime);
     if (p.inByoyomi) return Math.max(0, p.periodTime);
     return Math.max(0, p.mainTime);
   }
-
-  const MS = 1000;
 
   function computeSubLabel(p, m, lost) {
     if (lost) return 'Lost on Time!';
@@ -68,25 +60,34 @@
     return null;
   }
 
-  $: clockClass = [
-    'clock',
-    isActive ? 'active' : 'inactive',
-    rotated ? 'rotated' : '',
-    isPaused ? 'paused' : '',
-    gameOver ? 'game-over' : '',
-    lostOnTime ? 'lost' : '',
-    !started ? 'pre-start' : '',
-    wrongFlash ? 'wrong-flash' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  let timeForDisplay = $derived(computeTimeForDisplay(player, mode));
+  let timeLabel = $derived(
+    lostOnTime ? '0:00' : formatTime(timeForDisplay, { showTenthsUnder: 0 })
+  );
+  let subLabel = $derived(computeSubLabel(player, mode, lostOnTime));
+  let suddenDeath = $derived(subLabel === 'Sudden Death');
+
+  let clockClass = $derived(
+    [
+      'clock',
+      isActive ? 'active' : 'inactive',
+      rotated ? 'rotated' : '',
+      isPaused ? 'paused' : '',
+      gameOver ? 'game-over' : '',
+      lostOnTime ? 'lost' : '',
+      !started ? 'pre-start' : '',
+      wrongFlash ? 'wrong-flash' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
 </script>
 
 <button
   type="button"
   class={clockClass}
-  on:pointerup={handlePointerUp}
-  on:click={handleClick}
+  onpointerup={handlePointerUp}
+  onclick={handleClick}
 >
   <div class="inner">
     <div class="top-row">

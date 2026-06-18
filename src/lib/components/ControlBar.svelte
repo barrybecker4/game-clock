@@ -1,10 +1,5 @@
 <script>
-  export let isPaused = false;
-  export let audioEnabled = true;
-  export let gameOver = false;
-
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
+  let { isPaused = false, audioEnabled = true, gameOver = false, onsettings, onreset, ontogglePause, ontoggleAudio } = $props();
 </script>
 
 <div class="bar">
@@ -12,7 +7,7 @@
     class="ctrl"
     aria-label="Back to settings"
     title="Settings"
-    on:click={() => dispatch('settings')}
+    onclick={() => onsettings?.()}
   >
     <!-- Clock / settings icon -->
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -25,7 +20,7 @@
     class="ctrl"
     aria-label="Reset game"
     title="Reset"
-    on:click={() => dispatch('reset')}
+    onclick={() => onreset?.()}
   >
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <polyline points="1 4 1 10 7 10" />
@@ -38,7 +33,7 @@
     aria-label={isPaused ? 'Resume' : 'Pause'}
     title={isPaused ? 'Resume' : 'Pause'}
     disabled={gameOver}
-    on:click={() => dispatch('togglePause')}
+    onclick={() => ontogglePause?.()}
   >
     {#if isPaused}
       <!-- Play icon -->
@@ -58,7 +53,7 @@
     class="ctrl"
     aria-label={audioEnabled ? 'Mute' : 'Unmute'}
     title={audioEnabled ? 'Mute' : 'Unmute'}
-    on:click={() => dispatch('toggleAudio')}
+    onclick={() => ontoggleAudio?.()}
   >
     {#if audioEnabled}
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

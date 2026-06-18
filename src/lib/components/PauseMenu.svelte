@@ -1,9 +1,5 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
-
-  export let gameOver = false;
-  export let loserText = '';
+  let { gameOver = false, loserText = '', onresume, onreset, onsettings } = $props();
 </script>
 
 <div class="overlay" role="dialog" aria-modal="true">
@@ -17,12 +13,12 @@
 
     <div class="actions">
       {#if !gameOver}
-        <button class="primary" on:click={() => dispatch('resume')}>Resume</button>
+        <button class="primary" onclick={() => onresume?.()}>Resume</button>
       {/if}
-      <button class="secondary" on:click={() => dispatch('reset')}>
+      <button class="secondary" onclick={() => onreset?.()}>
         {gameOver ? 'New Game (Same Settings)' : 'Reset Game'}
       </button>
-      <button class="ghost" on:click={() => dispatch('settings')}>Change Settings</button>
+      <button class="ghost" onclick={() => onsettings?.()}>Change Settings</button>
     </div>
   </div>
 </div>

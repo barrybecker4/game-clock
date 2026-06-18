@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte';
   import ConfigScreen from './lib/components/ConfigScreen.svelte';
   import GameClock from './lib/components/GameClock.svelte';
   import { gameState } from './lib/stores/gameState.js';
@@ -9,10 +8,10 @@
 
   const INSTALL_BANNER_DISMISSED_KEY = 'installBannerDismissed';
 
-  let showInstallBanner = false;
-  let hasInstallPrompt = false;
-  let deferredInstallPrompt = null;
-  let isIosManualInstall = false;
+  let showInstallBanner = $state(false);
+  let hasInstallPrompt = $state(false);
+  let deferredInstallPrompt = $state(null);
+  let isIosManualInstall = $state(false);
 
   function isStandaloneMode() {
     if (typeof window === 'undefined') return true;
@@ -54,10 +53,12 @@
     dismissInstallBanner();
   }
 
-  $: setVoiceEnabled($settings.audioEnabled);
-  $: setBuzzerEnabled($settings.audioEnabled);
+  $effect(() => {
+    setVoiceEnabled($settings.audioEnabled);
+    setBuzzerEnabled($settings.audioEnabled);
+  });
 
-  onMount(() => {
+  $effect(() => {
     let dismissed = false;
     try {
       dismissed = window.localStorage.getItem(INSTALL_BANNER_DISMISSED_KEY) === '1';
@@ -102,9 +103,9 @@
       </p>
       <div class="install-banner-actions">
         {#if hasInstallPrompt}
-          <button class="banner-btn install-btn" on:click={installApp}>Install</button>
+          <button class="banner-btn install-btn" onclick={installApp}>Install</button>
         {/if}
-        <button class="banner-btn dismiss-btn" on:click={dismissInstallBanner} aria-label="Dismiss install prompt">
+        <button class="banner-btn dismiss-btn" onclick={dismissInstallBanner} aria-label="Dismiss install prompt">
           Not now
         </button>
       </div>

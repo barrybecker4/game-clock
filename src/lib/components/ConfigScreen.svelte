@@ -82,20 +82,15 @@
     gameState.startGame($settings);
   }
 
-  $: mode = $settings.mode;
-  $: fischer = $settings.fischer;
-  $: byoyomi = $settings.byoyomi;
+  let mode = $derived($settings.mode);
+  let fischer = $derived($settings.fischer);
+  let byoyomi = $derived($settings.byoyomi);
 
   /** Match highlight to the numeric config (avoids stale persisted "selection" IDs) */
-  $: activeFischerPresetId = findFischerPresetId(fischer);
-  $: activeByoyomiPresetId = findByoyomiPresetId(byoyomi);
+  let activeFischerPresetId = $derived(findFischerPresetId(fischer));
+  let activeByoyomiPresetId = $derived(findByoyomiPresetId(byoyomi));
 
-  let showAbout = false;
-
-  $: mainSummary =
-    mode === 'fischer'
-      ? `${secondsLabel(fischer.mainTime)} + ${fischer.increment}s`
-      : `${secondsLabel(byoyomi.mainTime)} + ${byoyomi.periods} × ${byoyomi.periodTime}s`;
+  let showAbout = $state(false);
 
   function secondsLabel(s) {
     if (s < 60) return `${s}s`;
@@ -103,6 +98,12 @@
     const rem = s % 60;
     return rem === 0 ? `${m}m` : `${m}m ${rem}s`;
   }
+
+  let mainSummary = $derived(
+    mode === 'fischer'
+      ? `${secondsLabel(fischer.mainTime)} + ${fischer.increment}s`
+      : `${secondsLabel(byoyomi.mainTime)} + ${byoyomi.periods} × ${byoyomi.periodTime}s`
+  );
 </script>
 
 <div class="config">
@@ -114,14 +115,14 @@
     <button
       class="tab"
       class:active={mode === 'fischer'}
-      on:click={() => setMode('fischer')}
+      onclick={() => setMode('fischer')}
     >
       Fischer
     </button>
     <button
       class="tab"
       class:active={mode === 'byoyomi'}
-      on:click={() => setMode('byoyomi')}
+      onclick={() => setMode('byoyomi')}
     >
       Byo-yomi
     </button>
@@ -135,7 +136,7 @@
           <button
             class="preset"
             class:active={preset.id === activeFischerPresetId}
-            on:click={() => applyFischerPreset(preset)}
+            onclick={() => applyFischerPreset(preset)}
           >
             <span class="preset-label">{preset.label}</span>
             <span class="preset-detail">
@@ -157,7 +158,7 @@
                 max={MAIN_TIME_MAX_MIN}
                 step="1"
                 value={Math.floor(fischer.mainTime / 60)}
-                on:input={handleFischerMainMin}
+                oninput={handleFischerMainMin}
               />
             </label>
             <label>
@@ -168,7 +169,7 @@
                 max="59"
                 step="1"
                 value={fischer.mainTime % 60}
-                on:input={handleFischerMainSec}
+                oninput={handleFischerMainSec}
               />
             </label>
           </div>
@@ -181,7 +182,7 @@
             min="0"
             step="1"
             value={fischer.increment}
-            on:input={handleFischerInc}
+            oninput={handleFischerInc}
           />
           <small>per move</small>
         </label>
@@ -193,7 +194,7 @@
           <button
             class="preset"
             class:active={preset.id === activeByoyomiPresetId}
-            on:click={() => applyByoyomiPreset(preset)}
+            onclick={() => applyByoyomiPreset(preset)}
           >
             <span class="preset-label">{preset.label}</span>
             <span class="preset-detail">
@@ -215,7 +216,7 @@
                 max={MAIN_TIME_MAX_MIN}
                 step="1"
                 value={Math.floor(byoyomi.mainTime / 60)}
-                on:input={handleByoMainMin}
+                oninput={handleByoMainMin}
               />
             </label>
             <label>
@@ -226,7 +227,7 @@
                 max="59"
                 step="1"
                 value={byoyomi.mainTime % 60}
-                on:input={handleByoMainSec}
+                oninput={handleByoMainSec}
               />
             </label>
           </div>
@@ -239,7 +240,7 @@
             min="1"
             step="1"
             value={byoyomi.periods}
-            on:input={handleByoPeriods}
+            oninput={handleByoPeriods}
           />
           <small>count</small>
         </label>
@@ -250,7 +251,7 @@
             min="1"
             step="5"
             value={byoyomi.periodTime}
-            on:input={handleByoPeriodTime}
+            oninput={handleByoPeriodTime}
           />
           <small>each</small>
         </label>
@@ -264,13 +265,13 @@
         <span class="summary-label">{mode === 'fischer' ? 'Fischer' : 'Byo-yomi'}</span>
         <span class="summary-value tabular">{mainSummary}</span>
       </div>
-      <button type="button" class="about-link" on:click={() => (showAbout = true)}>About</button>
+      <button type="button" class="about-link" onclick={() => (showAbout = true)}>About</button>
     </div>
-    <button class="start" on:click={startGame}>Start Game</button>
+    <button class="start" onclick={startGame}>Start Game</button>
   </footer>
 
   {#if showAbout}
-    <AboutDialog on:close={() => (showAbout = false)} />
+    <AboutDialog onclose={() => (showAbout = false)} />
   {/if}
 </div>
 
